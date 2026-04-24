@@ -1,5 +1,6 @@
 import numpy as np
 from numpy import random
+import matplotlib.pyplot as plt
 
 class Lattice:
     def __init__(self, size = 100, seed = 1234, sigma = 0.1, gamma = 0.005): ##initialising variables 
@@ -106,3 +107,16 @@ class Lattice:
         for i in range (MC_steps):
             self.step() ##runs monte carlo simulation over a given number of steps
     
+    def plot_population(self):
+        time = range(len(self.sus_pop)) ##creates a list which is the number of monte carlo steps
+        fig, ax = plt.subplots()
+        plt.plot(time, self.sus_pop, label = 'Susceptible')
+        plt.plot(time, self.exp_pop, label = 'Exposed')
+        plt.plot(time, self.inf_pop, label = 'Infected')
+        plt.plot(time, self.rec_pop, label = 'Recovered') ##plots of each agents population at each step against step
+        plt.xlabel("Monte Carlo Step")
+        plt.ylabel("number of agents")
+        plt.legend()
+        plt.grid(True) ##adds grid to plot for better visualisation
+
+        plt.show()
