@@ -2,15 +2,16 @@ import matplotlib.pyplot as plt
 
 class SEIRModel:
     
-    def __init__(self):
-        self.exposure_rate = 1
-        self.incubation_rate = 1
-        self.recovery_rate = 0.1
-        self.__days_list = range(0,101)
-        self.__sus_list = [0.99]
-        self.__exp_list = [0.01]
-        self.__inf_list = [0]
-        self.__rec_list = [0]
+    def __init__(self, exposure_rate=1.0, incubation_rate=1.0, recovery_rate=0.1, sus0 = 0.99, exp0 = 0.01, inf0=0.0, rec0=0.0, days=100): ##initialised parameters
+        self.exposure_rate = exposure_rate
+        self.incubation_rate = incubation_rate
+        self.recovery_rate = recovery_rate
+        self.days = days
+        self.__days_list = range(0,days + 1) ##list of days
+        self.__sus_list = [sus0] 
+        self.__exp_list = [exp0]
+        self.__inf_list = [inf0]
+        self.__rec_list = [rec0] ##initial list of population
 
     def __update_sus (self, sus, inf):
         return sus - self.exposure_rate * inf * sus
@@ -22,10 +23,10 @@ class SEIRModel:
         return inf + self.incubation_rate * exp - self.recovery_rate * inf
 
     def __update_rec (self, rec, inf):
-        return rec + self.recovery_rate * inf
+        return rec + self.recovery_rate * inf ##calculate the rates an
 
     def calculate(self):
-        for i in range(0, 100):
+        for i in range(0, self.days):
             sus = self.__sus_list[-1]
             exp = self.__exp_list[-1]
             inf = self.__inf_list[-1]
@@ -47,6 +48,3 @@ class SEIRModel:
         plt.legend()
         plt.show()
 
-model = SEIRModel()
-model.calculate()
-model.plot()

@@ -12,10 +12,31 @@ def main():
     parser.add_argument("--ratio_exp", type=float, default=0.05)
     parser.add_argument("--steps", type=int, default=2000) ##control parameters added with default values included
 
+    parser.add_argument("--exposure_rate", type=float, default = 1.0)
+    parser.add_argument("--incubation_rate", type=float, default = 1.0)
+    parser.add_argument("--recovery_rate", type=float, default = 0.1)
+
+    parser.add_argument("--sus0", type=float, default=0.99)
+    parser.add_argument("--exp0", type=float, default=0.01)
+    parser.add_argument("--inf0", type=float, default=0.0)
+    parser.add_argument("--rec0", type=float, default=0.0)
+
+    parser.add_argument("--days", type=int, default=100) ##parameters of the determinsitic model added
+
+
     args = parser.parse_args() ##parse the arguements provided 
 
     # Deterministic model
-    model = SEIRModel() ##create instance of the deterministic SEIR model
+    model = SEIRModel(
+        exposure_rate=args.exposure_rate,
+        incubation_rate=args.incubation_rate,
+        recovery_rate=args.recovery_rate,
+        sus0=args.sus0,
+        exp0=args.exp0,
+        inf0=args.inf0,
+        rec0=args.rec0,
+        days=args.days
+    ) ##create instance of the deterministic SEIR model
     model.calculate()
     model.plot() ##runs the functions
 
