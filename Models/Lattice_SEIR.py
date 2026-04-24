@@ -15,6 +15,12 @@ class Lattice:
         self.inf_pop = []
         self.rec_pop = []
     
+    def record_counts(self):
+            self.sus_pop.append(np.sum(self.grid == 1))
+            self.exp_pop.append(np.sum(self.grid == 2))
+            self.inf_pop.append(np.sum(self.grid == 3))
+            self.rec_pop.append(np.sum(self.grid == 4)) ##records total number of each agents in lattice and adds it to their corresponding list to store population
+
     def initialise_grid(self, total_particles = 250, ratio_exp = 0.05): 
         init_exp = int(ratio_exp * total_particles) ##calculates number of intial exposed agents
         init_sus = int(total_particles * (1-ratio_exp)) ##calculates number of initial susceptible agents
@@ -28,6 +34,7 @@ class Lattice:
         self.grid[coordinates[0][:init_exp], coordinates[1][:init_exp]] = 2 ##takes first exposed positions and changes grid co-ordinates to 2 to represent exposed agents
         self.grid[coordinates[0][init_exp:], coordinates[1][init_exp:]] = 1 ##takes remaining positions and changes grid co-ordinates to 1 to represent susceptible agents
         
+        self.record_counts()
         return(self.grid) ##returns updated grid
 
     def get_neighbours(self, i , j):  
@@ -50,7 +57,6 @@ class Lattice:
         if i < self.size -1  and j < self.size - 1 :
             neighbours.append((i + 1, j + 1)) ##find and stores diagonal cells
 
-
         return neighbours ##returns list of neighbours
 
 
@@ -71,5 +77,32 @@ class Lattice:
                 self.grid[ni, nj] = state ##updates chosen cell to the value of the agent (moves agent)
                 self.grid[i, j] = 0 ##updates original position of agent back to 0 (empty)
 
+    def update_agents(self):
+            agents = np.argwhere(self.grid !=0) ##locates all filled sites
+            for i, j in agents:
+                if self.grid[i,j] == 1:
+                    neighbours = self.get_neighbours(i, j) ##records neighbouring cells to the susceptible agent
+                    values = [self.grid[ni,nj] for ni, nj in neighbours] ##finds the values of the neigbouring cells in grid
+                    prob_inf = 1 *  (values.count(3)/(len(neighbours))) ##calculates probability of infection depending on number of infected agents surrounding 
+                    
+                    if self.rng.random() < prob_inf: ##compares random value (0-1) to calculated probability value above
+                        self.grid[i, j] = 2 ##if random value is smaller than agent moves from susceptible to exposed
+
+                elif self.grid[i,j] == 2:
+                    if self.rng.random() < self.sigma:  
+                        self.grid[i,j] = 3 ##for exposed agent if the random value is smaller than chosen value of sigma agent becomes infected
+                
+                elif self.grid[i,j] == 3:
+                    if self.rng.random() < self.gamma:
+                        self.grid[i,j] = 4 ##for infected agent if the random value is smaller than chosen value of gamma agent recovers
     
+    
+    def step(self):
+        self.move_agents() ##runs the moving agent function
+        self.update_agents() ##calulates whether agents moves down SEIR
+        self.record_counts() ##records the population of each agent at each step
+
+    def run(self, MC_steps):
+        for i in range (MC_steps):
+            self.step() ##runs monte carlo simulation over a given number of steps
     
