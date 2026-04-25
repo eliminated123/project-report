@@ -3,7 +3,7 @@ from numpy import random
 import matplotlib.pyplot as plt
 
 class Lattice:
-    def __init__(self, size = 100, seed = 1234, sigma = 0.1, gamma = 0.005): ##initialising variables 
+    def __init__(self, size = 100, seed = 1234, sigma = 0.1, gamma = 0.005, lockdown_start= (10**100) , movement_prob=1.0, lockdown_strength=0.0): ##initialising variables 
         self.size = size
         self.grid = np.zeros((size,size), dtype=int) ## creates grid using arrays of size x size with only vacant sites represented by 0
         self.rng = np.random.default_rng(seed)
@@ -15,16 +15,22 @@ class Lattice:
         self.exp_pop = []
         self.inf_pop = []
         self.rec_pop = []
-    
+
+        self.lockdown_start = lockdown_start
+        self.movement_prob = movement_prob ##movement_prob set to 1 to ensure that the model initially allows movement
+        self.lockdown_strength = lockdown_strength
+        self.current_step = 0 ##starts the step count at 0
+
     def record_counts(self):
             self.sus_pop.append(np.sum(self.grid == 1))
             self.exp_pop.append(np.sum(self.grid == 2))
             self.inf_pop.append(np.sum(self.grid == 3))
             self.rec_pop.append(np.sum(self.grid == 4)) ##records total number of each agents in lattice and adds it to their corresponding list to store population
 
-    def initialise_grid(self, total_particles = 250, ratio_exp = 0.05): 
+    def initialise_grid(self, total_particles = 250, ratio_exp = 0.05, ratio_rec = 0.0): 
         init_exp = int(ratio_exp * total_particles) ##calculates number of intial exposed agents
-        init_sus = int(total_particles * (1-ratio_exp)) ##calculates number of initial susceptible agents
+        init_rec = int(ratio_rec * total_particles) ##calculates number of intial recovered/vaccinated agents
+        init_sus = total_particles - init_exp - init_rec ##calculates number of initial susceptible agents
 
         total_cells = self.size * self.size ##total number of cells
         
@@ -33,9 +39,11 @@ class Lattice:
         coordinates = np.unravel_index(chosen_index, (self.size,self.size)) ## converts indices to grid positions (co-ordinates)
         
         self.grid[coordinates[0][:init_exp], coordinates[1][:init_exp]] = 2 ##takes first exposed positions and changes grid co-ordinates to 2 to represent exposed agents
-        self.grid[coordinates[0][init_exp:], coordinates[1][init_exp:]] = 1 ##takes remaining positions and changes grid co-ordinates to 1 to represent susceptible agents
+        self.grid[coordinates[0][init_exp:init_exp + init_rec], coordinates[1][init_exp:init_exp + init_rec]] = 4  ##takes the positions after the last exposed until to the number == init_exp + init_red and changed grid value to 4 
+        self.grid[coordinates[0][init_exp + init_rec:], coordinates[1][init_exp + init_rec:]] = 1 ##takes remaining positions and changes grid co-ordinates to 1 to represent susceptible agents
         
         self.record_counts()
+        
         return(self.grid) ##returns updated grid
 
     def get_neighbours(self, i , j):  
@@ -65,9 +73,17 @@ class Lattice:
         agents = np.argwhere(self.grid !=0) ##identifies the non-vacant sites in grid
         self.rng.shuffle(agents) ##randomly reorganises agents in array
 
+        if self.current_step > self.lockdown_start:
+            movement_prob = self.lockdown_strength ##when lock down starts strength will reduce probability of movement 
+        else:
+            movement_prob = 1
+
         for i, j in agents:
             if self.grid[i,j] == 0:
                 continue ##identifies if the agent has already moved by checking if co-ordinate is empty
+            
+            if self.rng.random() > movement_prob:
+                continue ##when lockdown starts the movement of agents will stop as it skips over the code below
             
             state = self.grid[i, j] ##records value (agent) in cell 
             neighbours = self.get_neighbours(i, j) ##find neighbours using function above
@@ -102,6 +118,7 @@ class Lattice:
         self.move_agents() ##runs the moving agent function
         self.update_agents() ##calulates whether agents moves down SEIR
         self.record_counts() ##records the population of each agent at each step
+        self.current_step += 1 ##updates the step counter for lockdown model 
 
     def run(self, MC_steps):
         for i in range (MC_steps):

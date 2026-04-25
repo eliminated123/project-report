@@ -23,7 +23,7 @@ class SEIRModel:
         return inf + self.incubation_rate * exp - self.recovery_rate * inf
 
     def __update_rec (self, rec, inf):
-        return rec + self.recovery_rate * inf ##calculate the rates an
+        return rec + self.recovery_rate * inf ##calculate the rates and returns updated population size
 
     def calculate(self):
         for i in range(0, self.days):
@@ -35,7 +35,7 @@ class SEIRModel:
             self.__sus_list.append(self.__update_sus(sus, inf))
             self.__exp_list.append(self.__update_exp(exp, sus, inf))
             self.__inf_list.append(self.__update_inf(inf, exp))
-            self.__rec_list.append(self.__update_rec(rec, inf))
+            self.__rec_list.append(self.__update_rec(rec, inf)) ##updates population lists of each agent
 
     def plot(self):
         fig, ax = plt.subplots()
