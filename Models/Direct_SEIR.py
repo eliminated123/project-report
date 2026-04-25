@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 class SEIRModel:
     
@@ -13,6 +14,15 @@ class SEIRModel:
         self.__inf_list = [inf0]
         self.__rec_list = [rec0] ##initial list of population
 
+    def check_validity(self):
+        total = (self.__sus_list[-1] + self.__exp_list[-1] + self.__inf_list[-1] + self.__rec_list[-1])
+        
+        if not np.isclose(total, 1.0, atol=1e-6):
+            raise ValueError(f"Population not conserved: total = {total}") #checks if population is conserved np.isclose used due to float values which total may not ==1
+
+        if any(x < 0 for x in [self.__sus_list[-1], self.__exp_list[-1], self.__inf_list[-1], self.__rec_list[-1]]):
+            raise ValueError ("negative population") ## goes over values of population in list to check if the values are negative
+        
     def __update_sus (self, sus, inf):
         return sus - self.exposure_rate * inf * sus
 
@@ -36,6 +46,8 @@ class SEIRModel:
             self.__exp_list.append(self.__update_exp(exp, sus, inf))
             self.__inf_list.append(self.__update_inf(inf, exp))
             self.__rec_list.append(self.__update_rec(rec, inf)) ##updates population lists of each agent
+
+            self.check_validity()
 
     def plot(self):
         fig, ax = plt.subplots()

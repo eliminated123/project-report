@@ -20,7 +20,7 @@ class Lattice:
         self.movement_prob = movement_prob ##movement_prob set to 1 to ensure that the model initially allows movement
         self.lockdown_strength = lockdown_strength
         self.current_step = 0 ##starts the step count at 0
-
+      
     def record_counts(self):
             self.sus_pop.append(np.sum(self.grid == 1))
             self.exp_pop.append(np.sum(self.grid == 2))
@@ -28,6 +28,11 @@ class Lattice:
             self.rec_pop.append(np.sum(self.grid == 4)) ##records total number of each agents in lattice and adds it to their corresponding list to store population
 
     def initialise_grid(self, total_particles = 250, ratio_exp = 0.05, ratio_rec = 0.0): 
+        
+        self.total_particles = total_particles
+        self.ratio_exp = ratio_exp
+        self.ratio_rec = ratio_rec
+
         init_exp = int(ratio_exp * total_particles) ##calculates number of intial exposed agents
         init_rec = int(ratio_rec * total_particles) ##calculates number of intial recovered/vaccinated agents
         init_sus = total_particles - init_exp - init_rec ##calculates number of initial susceptible agents
@@ -45,6 +50,24 @@ class Lattice:
         self.record_counts()
         
         return(self.grid) ##returns updated grid
+    
+    def check_validity(self):
+        total = (np.sum(self.grid == 1) + np.sum(self.grid == 2) + np.sum(self.grid == 3) + np.sum(self.grid == 4))
+
+        if total != self.total_particles:
+            raise ValueError ("population not conserved") ##checks if total population conserved
+        
+        if self.grid.min() < 0 or self.grid.max() > 4:
+            raise ValueError ("Incorrect states in grid") ##checks for any values which are out of the range 0-4
+        
+        if self.ratio_exp < 0 or self.ratio_exp > 1 :
+            raise ValueError("ratio_exp must be between 0 and 1")
+
+        if self.ratio_rec < 0 or self.ratio_rec > 1 :
+            raise ValueError("ratio_rec must be between 0 and 1") ##ensures ratios are within 0-1
+
+        if self.ratio_exp + self.ratio_rec > 1:
+            raise ValueError("ratio_exp + ratio_rec cannot exceed 1") 
 
     def get_neighbours(self, i , j):  
         neighbours = [] ##empty list to store the neighbouring cells of a co-ordinate
@@ -118,6 +141,7 @@ class Lattice:
         self.move_agents() ##runs the moving agent function
         self.update_agents() ##calulates whether agents moves down SEIR
         self.record_counts() ##records the population of each agent at each step
+        self.check_validity() ##checks for any errors in model
         self.current_step += 1 ##updates the step counter for lockdown model 
 
     def run(self, MC_steps):
