@@ -144,9 +144,12 @@ class Lattice:
         self.check_validity() ##checks for any errors in model
         self.current_step += 1 ##updates the step counter for lockdown model 
 
-    def run(self, MC_steps):
+    def run(self, MC_steps, plot_step = None):
         for i in range (MC_steps):
             self.step() ##runs monte carlo simulation over a given number of steps
+            
+            if plot_step is not None and i + 1 == plot_step: ##since current_step is in step() i+1 makes plot at chosen step if plot_step is None no grid is plotted
+                self.plot_grid()
     
     def plot_population(self):
         time = range(len(self.sus_pop)) ##creates a list which is the number of monte carlo steps
@@ -156,8 +159,40 @@ class Lattice:
         plt.plot(time, self.inf_pop, label = 'Infected')
         plt.plot(time, self.rec_pop, label = 'Recovered') ##plots of each agents population at each step against step
         plt.xlabel("Monte Carlo Step")
-        plt.ylabel("number of agents")
+        plt.ylabel("Number of agents")
         plt.legend()
         plt.grid(True) ##adds grid to plot for better visualisation
+
+        plt.show()
+
+    def plot_grid(self):
+        sus = np.argwhere(self.grid == 1)
+        exp = np.argwhere(self.grid == 2)
+        inf = np.argwhere(self.grid == 3)
+        rec = np.argwhere(self.grid == 4) ## Gets positions of each state
+
+        plt.figure(figsize=(6, 6))
+
+        if len(sus) > 0:
+            plt.scatter(sus[:,1], sus[:,0], c="blue", s=10, label="Susceptible") 
+
+        if len(exp) > 0:
+            plt.scatter(exp[:,1], exp[:,0], c="orange", s=10, label="Exposed")
+
+        if len(inf) > 0:
+            plt.scatter(inf[:,1], inf[:,0], c="red", s=10, label="Infected")
+
+        if len(rec) > 0:
+            plt.scatter(rec[:,1], rec[:,0], c="green", s=10, label="Recovered") ##flips the row and column to represent (x,y) co-ordinates and plot it as scatter points of each agent
+
+        plt.xlim(0, self.size) ##limits of axis added
+        plt.ylim(0, self.size)
+
+        plt.xlabel("x position")
+        plt.ylabel("y position")
+        plt.title(f"Monte Carlo SEIR simulation (step {self.current_step})") ##title and includes which step the grid plotted is
+
+        plt.legend()
+        plt.gca().invert_yaxis()  ## visualised as grid coordinates
 
         plt.show()

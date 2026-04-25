@@ -14,7 +14,7 @@ def main():
     parser.add_argument("--steps", type=int, default=2000) ##control parameters added with default values included
     parser.add_argument("--lockdown_start", type=int, default= (10**100))
     parser.add_argument("--lockdown_strength", type=float, default = 0.0)
-
+    parser.add_argument("--plot_step", type=int, default=0)
 
     parser.add_argument("--exposure_rate", type=float, default = 1.0)
     parser.add_argument("--incubation_rate", type=float, default = 1.0)
@@ -60,8 +60,9 @@ def main():
         ratio_rec=args.ratio_rec
     ) 
 
-    lattice.run(args.steps)
+    lattice.run(args.steps, args.plot_step)
     lattice.plot_population()
+
 
 
 if __name__ == "__main__":
