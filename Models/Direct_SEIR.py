@@ -3,8 +3,8 @@ import numpy as np
 
 class SEIRModel:
     
-    def __init__(self, exposure_rate=1.0, incubation_rate=1.0, recovery_rate=0.1, sus0 = 0.99, exp0 = 0.01, inf0=0.0, rec0=0.0, days=100): ##initialised parameters
-        self.exposure_rate = exposure_rate
+    def __init__(self, infection_rate=1.0, incubation_rate=1.0, recovery_rate=0.1, sus0 = 0.99, exp0 = 0.01, inf0=0.0, rec0=0.0, days=100): ##initialised parameters
+        self.infection_rate = infection_rate
         self.incubation_rate = incubation_rate
         self.recovery_rate = recovery_rate
         self.days = days
@@ -24,10 +24,10 @@ class SEIRModel:
             raise ValueError ("negative population") ## goes over values of population in list to check if the values are negative
         
     def __update_sus (self, sus, inf):
-        return sus - self.exposure_rate * inf * sus
+        return sus - self.infection_rate * inf * sus
 
     def __update_exp (self, exp, sus, inf):
-        return exp + self.exposure_rate * inf * sus - self.incubation_rate * exp 
+        return exp + self.infection_rate * inf * sus - self.incubation_rate * exp 
 
     def __update_inf (self, inf, exp):
         return inf + self.incubation_rate * exp - self.recovery_rate * inf

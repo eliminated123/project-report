@@ -16,7 +16,7 @@ def main():
     parser.add_argument("--lockdown_strength", type=float, default = 0.0)
     parser.add_argument("--plot_step", type=int, default=0)
 
-    parser.add_argument("--exposure_rate", type=float, default = 1.0)
+    parser.add_argument("--infection_rate", type=float, default = 1.0)
     parser.add_argument("--incubation_rate", type=float, default = 1.0)
     parser.add_argument("--recovery_rate", type=float, default = 0.1)
 
@@ -32,7 +32,7 @@ def main():
 
     # Deterministic model
     model = SEIRModel(
-        exposure_rate=args.exposure_rate,
+        infection_rate=args.infection_rate,
         incubation_rate=args.incubation_rate,
         recovery_rate=args.recovery_rate,
         sus0=args.sus0,

@@ -21,13 +21,13 @@ class Lattice:
         self.lockdown_strength = lockdown_strength
         self.current_step = 0 ##starts the step count at 0
       
-    def record_counts(self):
+    def _record_counts(self):
             self.sus_pop.append(np.sum(self.grid == 1))
             self.exp_pop.append(np.sum(self.grid == 2))
             self.inf_pop.append(np.sum(self.grid == 3))
             self.rec_pop.append(np.sum(self.grid == 4)) ##records total number of each agents in lattice and adds it to their corresponding list to store population
 
-    def initialise_grid(self, total_particles = 250, ratio_exp = 0.05, ratio_rec = 0.0): 
+    def initialise_grid(self, total_particles = 250, ratio_exp = 0.05, ratio_rec = 0.0):
         
         self.total_particles = total_particles
         self.ratio_exp = ratio_exp
@@ -51,7 +51,7 @@ class Lattice:
         
         return(self.grid) ##returns updated grid
     
-    def check_validity(self):
+    def _check_validity(self):
         total = (np.sum(self.grid == 1) + np.sum(self.grid == 2) + np.sum(self.grid == 3) + np.sum(self.grid == 4))
 
         if total != self.total_particles:
@@ -69,7 +69,7 @@ class Lattice:
         if self.ratio_exp + self.ratio_rec > 1:
             raise ValueError("ratio_exp + ratio_rec cannot exceed 1") 
 
-    def get_neighbours(self, i , j):  
+    def _get_neighbours(self, i , j):  
         neighbours = [] ##empty list to store the neighbouring cells of a co-ordinate
         if i > 0:
             neighbours.append((i - 1, j))
@@ -92,7 +92,7 @@ class Lattice:
         return neighbours ##returns list of neighbours
 
 
-    def move_agents(self):
+    def _move_agents(self):
         agents = np.argwhere(self.grid !=0) ##identifies the non-vacant sites in grid
         self.rng.shuffle(agents) ##randomly reorganises agents in array
 
@@ -117,7 +117,8 @@ class Lattice:
                 self.grid[ni, nj] = state ##updates chosen cell to the value of the agent (moves agent)
                 self.grid[i, j] = 0 ##updates original position of agent back to 0 (empty)
 
-    def update_agents(self):
+    ##locates and applies transition conditions for the agents in lattice 
+    def _update_agents(self): 
             agents = np.argwhere(self.grid !=0) ##locates all filled sites
             for i, j in agents:
                 if self.grid[i,j] == 1:
@@ -138,13 +139,13 @@ class Lattice:
     
     
     def step(self):
-        self.move_agents() ##runs the moving agent function
-        self.update_agents() ##calulates whether agents moves down SEIR
-        self.record_counts() ##records the population of each agent at each step
-        self.check_validity() ##checks for any errors in model
+        self._move_agents() ##runs the moving agent function
+        self._update_agents() ##calulates whether agents moves down SEIR
+        self._record_counts() ##records the population of each agent at each step
+        self._check_validity() ##checks for any errors in model
         self.current_step += 1 ##updates the step counter for lockdown model 
 
-    def run(self, MC_steps, plot_step = None):
+    def run(self, MC_steps, plot_step = None): 
         for i in range (MC_steps):
             self.step() ##runs monte carlo simulation over a given number of steps
             
