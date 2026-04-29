@@ -47,7 +47,7 @@ class Lattice:
         self.grid[coordinates[0][init_exp:init_exp + init_rec], coordinates[1][init_exp:init_exp + init_rec]] = 4  ##takes the positions after the last exposed until to the number == init_exp + init_red and changed grid value to 4 
         self.grid[coordinates[0][init_exp + init_rec:], coordinates[1][init_exp + init_rec:]] = 1 ##takes remaining positions and changes grid co-ordinates to 1 to represent susceptible agents
         
-        self.record_counts()
+        self._record_counts()
         
         return(self.grid) ##returns updated grid
     
@@ -109,7 +109,7 @@ class Lattice:
                 continue ##when lockdown starts the movement of agents will stop as it skips over the code below
             
             state = self.grid[i, j] ##records value (agent) in cell 
-            neighbours = self.get_neighbours(i, j) ##find neighbours using function above
+            neighbours = self._get_neighbours(i, j) ##find neighbours using function above
 
             ni, nj = neighbours[self.rng.integers(len(neighbours))] ##randomises the neightbours in list and selects one
 
@@ -122,7 +122,7 @@ class Lattice:
             agents = np.argwhere(self.grid !=0) ##locates all filled sites
             for i, j in agents:
                 if self.grid[i,j] == 1:
-                    neighbours = self.get_neighbours(i, j) ##records neighbouring cells to the susceptible agent
+                    neighbours = self._get_neighbours(i, j) ##records neighbouring cells to the susceptible agent
                     values = [self.grid[ni,nj] for ni, nj in neighbours] ##finds the values of the neigbouring cells in grid
                     prob_inf = 1 *  (values.count(3)/(len(neighbours))) ##calculates probability of infection depending on number of infected agents surrounding 
                     
@@ -162,7 +162,6 @@ class Lattice:
         plt.xlabel("Monte Carlo Step")
         plt.ylabel("Number of agents")
         plt.legend()
-        plt.grid(True) ##adds grid to plot for better visualisation
 
         plt.show()
 
